@@ -1,353 +1,320 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HospTech - Triagem Inteligente</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-
-<body class="bg-light">
-
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-dark bg-primary shadow-sm">
-        <div class="container">
-
-            <span class="navbar-brand mb-0 h1">
-                <i class="bi bi-heart-pulse-fill me-2"></i>
-                HospTech | Triagem de Saúde IA
-            </span>
-
-            <span class="badge bg-light text-primary py-2 px-3 border">
-                Flask + OpenRouter
-            </span>
-
-        </div>
-    </nav>
-
-    <!-- CONTEÚDO -->
-    <div class="container my-5">
-
-        <div class="row g-4">
-
-            <!-- FORM -->
-            <div class="col-lg-6">
-
-                <div class="card border-0 shadow-sm h-100">
-
-                    <div class="card-header bg-white border-0 pt-4 px-4">
-
-                        <h5 class="card-title fw-bold text-secondary">
-                            <i class="bi bi-file-earmark-medical me-2"></i>
-                            Prontuário de Entrada
-                        </h5>
-
-                        <p class="text-muted small">
-                            Insira o relato completo dos sintomas do paciente.
-                        </p>
-
-                    </div>
-
-                    <div class="card-body px-4 pb-4">
-
-                        <form id="formTriagem">
-
-                            <div class="mb-3">
-
-                                <label for="relato" class="form-label fw-semibold text-muted">
-                                    Relato de Sintomas:
-                                </label>
-
-                                <textarea
-                                    class="form-control"
-                                    id="relato"
-                                    rows="7"
-                                    placeholder="Ex: Paciente com forte dor no peito, falta de ar, suor excessivo e tontura..."
-                                    required></textarea>
-
-                            </div>
-
-                            <button
-                                type="submit"
-                                id="btnEnviar"
-                                class="btn btn-primary w-100 py-2 fw-bold">
-
-                                <i class="bi bi-cpu-fill me-2"></i>
-                                Processar Triagem
-
-                            </button>
-
-                        </form>
-
-                        <!-- LEGENDA -->
-
-                        <div class="mt-4">
-
-                            <h6 class="fw-bold text-secondary mb-3">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Legenda de Prioridades
-                            </h6>
-
-                            <div class="d-flex flex-column gap-2">
-
-                                <div class="alert alert-danger py-2 mb-0">
-                                    <strong>EMERGÊNCIA:</strong>
-                                    risco imediato à vida.
-                                </div>
-
-                                <div class="alert alert-warning py-2 mb-0">
-                                    <strong>URGÊNCIA:</strong>
-                                    necessita atendimento rápido.
-                                </div>
-
-                                <div class="alert alert-success py-2 mb-0">
-                                    <strong>POUCO URGENTE:</strong>
-                                    sintomas leves ou estáveis.
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- RESULTADO -->
-            <div class="col-lg-6">
-
-                <div class="card border-0 shadow-sm h-100">
-
-                    <div class="card-header bg-white border-0 pt-4 px-4">
-
-                        <h5 class="card-title fw-bold text-secondary">
-                            <i class="bi bi-clipboard2-pulse me-2"></i>
-                            Resultado da Triagem
-                        </h5>
-
-                    </div>
-
-                    <div
-                        class="card-body px-4 d-flex flex-column justify-content-center align-items-center text-center"
-                        id="painelResultado">
-
-                        <!-- AGUARDANDO -->
-
-                        <div id="estadoAguardando">
-
-                            <i class="bi bi-robot text-muted display-1"></i>
-
-                            <p class="text-muted mt-3">
-                                Aguardando envio do prontuário para análise.
-                            </p>
-
-                        </div>
-
-                        <!-- CARREGANDO -->
-
-                        <div id="estadoCarregando" class="d-none">
-
-                            <div
-                                class="spinner-border text-primary"
-                                style="width: 3rem; height: 3rem;"
-                                role="status"></div>
-
-                            <p class="text-primary fw-semibold mt-3">
-                                A IA está analisando os sintomas...
-                            </p>
-
-                        </div>
-
-                        <!-- SUCESSO -->
-
-                        <div id="estadoSucesso" class="w-100 d-none text-start">
-
-                            <!-- PRIORIDADE -->
-
-                            <div
-                                id="bordaPrioridade"
-                                class="p-3 mb-3 bg-light rounded border-start border-4">
-
-                                <h6 class="text-muted text-uppercase fw-bold small mb-1">
-                                    Classificação de Risco
-                                </h6>
-
-                                <h3 class="fw-bold mb-0" id="resPrioridade">
-                                    ---
-                                </h3>
-
-                            </div>
-
-                            <!-- ESPECIALIDADE -->
-
-                            <div class="mb-3">
-
-                                <span class="text-muted d-block small fw-semibold">
-                                    Especialidade Recomendada:
-                                </span>
-
-                                <span
-                                    class="badge bg-secondary fs-6 py-2 px-3 mt-1"
-                                    id="resEspecialidade">
-
-                                    ---
-
-                                </span>
-
-                            </div>
-
-                            <!-- JUSTIFICATIVA -->
-
-                            <div class="mb-0">
-
-                                <span class="text-muted d-block small fw-semibold">
-                                    Justificativa da IA:
-                                </span>
-
-                                <p
-                                    class="alert alert-info mt-2 mb-0"
-                                    id="resJustificativa">
-
-                                    ---
-
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- SCRIPT -->
-
-    <script>
-
-        document.getElementById('formTriagem')
-            .addEventListener('submit', async (e) => {
-
-                e.preventDefault();
-
-                const relatoTexto =
-                    document.getElementById('relato').value.trim();
-
-                const btn =
-                    document.getElementById('btnEnviar');
-
-                const estadoAguardando =
-                    document.getElementById('estadoAguardando');
-
-                const estadoCarregando =
-                    document.getElementById('estadoCarregando');
-
-                const estadoSucesso =
-                    document.getElementById('estadoSucesso');
-
-                const painelBorda =
-                    document.getElementById('bordaPrioridade');
-
-                if (!relatoTexto) {
-
-                    alert('Informe os sintomas do paciente.');
-
-                    return;
+import os
+import json
+import requests
+
+from flask import Flask, request, jsonify, render_template
+
+app = Flask(__name__)
+
+# ==============================================================================
+# PROMPT DO SISTEMA
+# ==============================================================================
+
+PROMPT_MEDICO_SISTEMA = """
+Você é um sistema de triagem hospitalar inteligente.
+
+Analise os sintomas do paciente e responda APENAS com JSON válido.
+
+NÃO use:
+- markdown
+- blocos ```json
+- explicações extras
+- comentários
+- texto fora do JSON
+
+Formato obrigatório:
+
+{
+  "especialidade_recomendada": "CARDIOLOGIA",
+  "nivel_prioridade": "EMERGENCIA",
+  "justificativa_breve": "Resumo clínico curto"
+}
+
+As prioridades permitidas são SOMENTE:
+- EMERGENCIA
+- URGENCIA
+- POUCO_URGENTE
+
+A especialidade deve ser escolhida de acordo com os sintomas do paciente.
+
+Especialidades permitidas:
+- CLINICO_GERAL
+- CARDIOLOGIA
+- ORTOPEDIA
+- NEUROLOGIA
+- PEDIATRIA
+- GASTROENTEROLOGIA
+- PNEUMOLOGIA
+- DERMATOLOGIA
+- OTORRINOLARINGOLOGIA
+- OFTALMOLOGIA
+- UROLOGIA
+- GINECOLOGIA
+- OBSTETRICIA
+- ENDOCRINOLOGIA
+- PSIQUIATRIA
+- HEMATOLOGIA
+- NEFROLOGIA
+- REUMATOLOGIA
+- INFECTOLOGIA
+- ONCOLOGIA
+- CIRURGIA_GERAL
+- CIRURGIA_VASCULAR
+- ALERGOLOGIA
+- IMUNOLOGIA
+- TRAUMATOLOGIA
+- PROCTOLOGIA
+- ANGIOLOGIA
+- MEDICINA_DO_TRABALHO
+- GERIATRIA
+
+Regras:
+- Em caso de dúvida clínica, escolha a MAIOR prioridade.
+- A resposta deve ser exclusivamente JSON válido.
+- Nunca responda fora do formato solicitado.
+"""
+
+# ==============================================================================
+# HOME
+# ==============================================================================
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+# ==============================================================================
+# TRIAGEM
+# ==============================================================================
+
+@app.route('/triagem/paciente', methods=['POST'])
+def processar_triagem():
+
+    try:
+
+        # ----------------------------------------------------------------------
+        # RECEBE JSON
+        # ----------------------------------------------------------------------
+
+        dados_hospital = request.get_json(silent=True)
+
+        if not dados_hospital:
+
+            return jsonify({
+                "erro": "JSON inválido."
+            }), 400
+
+        relato = dados_hospital.get('relato_sintomas')
+
+        if not relato:
+
+            return jsonify({
+                "erro": "Campo 'relato_sintomas' é obrigatório."
+            }), 400
+
+        # ----------------------------------------------------------------------
+        # API KEY
+        # ----------------------------------------------------------------------
+
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+
+        if not api_key:
+
+            return jsonify({
+                "erro": "Variável OPENROUTER_API_KEY não configurada."
+            }), 500
+
+        # ----------------------------------------------------------------------
+        # HEADERS
+        # ----------------------------------------------------------------------
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://render.com",
+            "X-Title": "HospTech Triagem IA"
+        }
+
+        # ----------------------------------------------------------------------
+        # PAYLOAD
+        # ----------------------------------------------------------------------
+
+        payload = {
+            "model": "openrouter/free",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": PROMPT_MEDICO_SISTEMA
+                },
+                {
+                    "role": "user",
+                    "content": f"Sintomas do paciente: {relato}"
                 }
+            ],
+            "temperature": 0,
+            "max_tokens": 300
+        }
 
-                estadoAguardando.classList.add('d-none');
-                estadoSucesso.classList.add('d-none');
-                estadoCarregando.classList.remove('d-none');
+        # ----------------------------------------------------------------------
+        # REQUEST OPENROUTER
+        # ----------------------------------------------------------------------
 
-                btn.disabled = true;
+        resposta = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
 
-                try {
+        resposta.raise_for_status()
 
-                    const resposta = await fetch('/triagem/paciente', {
+        dados_ia = resposta.json()
 
-                        method: 'POST',
+        # ----------------------------------------------------------------------
+        # VALIDA RESPOSTA
+        # ----------------------------------------------------------------------
 
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+        if 'choices' not in dados_ia:
 
-                        body: JSON.stringify({
-                            relato_sintomas: relatoTexto
-                        })
+            return jsonify({
+                "erro": "Resposta inválida da IA.",
+                "detalhes": dados_ia
+            }), 500
 
-                    });
+        if not dados_ia['choices']:
 
-                    const dados = await resposta.json();
+            return jsonify({
+                "erro": "Nenhuma resposta retornada pela IA."
+            }), 500
 
-                    if (!resposta.ok) {
+        # ----------------------------------------------------------------------
+        # EXTRAI TEXTO
+        # ----------------------------------------------------------------------
 
-                        throw new Error(
-                            dados.erro || 'Erro ao processar triagem.'
-                        );
-                    }
+        resultado_texto = (
+            dados_ia['choices'][0]
+            ['message']
+            ['content']
+            .strip()
+        )
 
-                    painelBorda.className =
-                        "p-3 mb-3 bg-light rounded border-start border-4";
+        # ----------------------------------------------------------------------
+        # LIMPEZA DE MARKDOWN
+        # ----------------------------------------------------------------------
 
-                    if (dados.nivel_prioridade === 'EMERGENCIA') {
+        resultado_texto = resultado_texto.replace("\n", " ").strip()
 
-                        painelBorda.classList.add('border-danger');
+        if "```json" in resultado_texto:
+            resultado_texto = resultado_texto.replace("```json", "")
 
-                    } else if (dados.nivel_prioridade === 'URGENCIA') {
+        if "```" in resultado_texto:
+            resultado_texto = resultado_texto.replace("```", "")
 
-                        painelBorda.classList.add('border-warning');
+        resultado_texto = resultado_texto.strip()
 
-                    } else {
+        # ----------------------------------------------------------------------
+        # CONVERTE JSON
+        # ----------------------------------------------------------------------
 
-                        painelBorda.classList.add('border-success');
-                    }
+        dados_final = json.loads(resultado_texto)
 
-                    document.getElementById('resPrioridade').innerText =
-                        dados.nivel_prioridade;
+        # ----------------------------------------------------------------------
+        # VALIDA CAMPOS
+        # ----------------------------------------------------------------------
 
-                    document.getElementById('resEspecialidade').innerText =
-                        dados.especialidade_recomendada;
+        campos_obrigatorios = [
+            "especialidade_recomendada",
+            "nivel_prioridade",
+            "justificativa_breve"
+        ]
 
-                    document.getElementById('resJustificativa').innerText =
-                        dados.justificativa_breve;
+        for campo in campos_obrigatorios:
 
-                    estadoCarregando.classList.add('d-none');
+            if campo not in dados_final:
 
-                    estadoSucesso.classList.remove('d-none');
+                raise ValueError(
+                    f"Campo obrigatório ausente: {campo}"
+                )
 
-                } catch (error) {
+        # ----------------------------------------------------------------------
+        # VALIDA PRIORIDADES
+        # ----------------------------------------------------------------------
 
-                    console.error(error);
+        prioridades_validas = [
+            "EMERGENCIA",
+            "URGENCIA",
+            "POUCO_URGENTE"
+        ]
 
-                    alert(
-                        error.message ||
-                        'Erro crítico ao se conectar ao servidor.'
-                    );
+        if dados_final["nivel_prioridade"] not in prioridades_validas:
 
-                    estadoCarregando.classList.add('d-none');
+            raise ValueError(
+                "Prioridade inválida retornada pela IA."
+            )
 
-                    estadoAguardando.classList.remove('d-none');
+        # ----------------------------------------------------------------------
+        # SUCESSO
+        # ----------------------------------------------------------------------
 
-                } finally {
+        return jsonify(dados_final), 200
 
-                    btn.disabled = false;
-                }
+    # ==========================================================================
+    # JSON INVÁLIDO
+    # ==========================================================================
 
-            });
+    except json.JSONDecodeError:
 
-    </script>
+        fallback = {
+            "especialidade_recomendada": "CLINICO_GERAL",
+            "nivel_prioridade": "EMERGENCIA",
+            "justificativa_breve":
+                "Falha ao interpretar a resposta da IA."
+        }
 
-</body>
+        return jsonify(fallback), 200
 
-</html>
+    # ==========================================================================
+    # TIMEOUT
+    # ==========================================================================
+
+    except requests.Timeout:
+
+        return jsonify({
+            "erro": "Timeout ao conectar com a IA."
+        }), 504
+
+    # ==========================================================================
+    # ERRO HTTP OPENROUTER
+    # ==========================================================================
+
+    except requests.HTTPError:
+
+        return jsonify({
+            "erro": "Erro HTTP da API OpenRouter.",
+            "status_code": resposta.status_code,
+            "detalhes": resposta.text
+        }), 502
+
+    # ==========================================================================
+    # ERRO GERAL
+    # ==========================================================================
+
+    except Exception as e:
+
+        return jsonify({
+            "erro": "Erro interno do servidor.",
+            "detalhes": str(e)
+        }), 500
+
+# ==============================================================================
+# MAIN
+# ==============================================================================
+
+if __name__ == '__main__':
+
+    porta = int(os.environ.get("PORT", 5000))
+
+    app.run(
+        host='0.0.0.0',
+        port=porta,
+        debug=False
+    )
